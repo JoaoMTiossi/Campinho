@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campinho — Sorteio de Times</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#17212b;
+    --panel-2:#1e2b38;
+    --border:#2a3a48;
+    --text:#e8eef2;
+    --muted:#8fa3b0;
+    --accent:#3fa9f5;
+    --azul:#2166d6;
+    --amarelo:#f2c12e;
+    --preto:#1c1c1c;
+    --danger:#e5484d;
+    --ok:#2fbf71;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 60px;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:18px 20px;
+    background: linear-gradient(180deg, #142029, #0f1720);
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  #logo-img{
+    width:48px;height:48px;border-radius:50%;object-fit:cover;
+    background:#223;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid var(--accent);
+  }
+  header h1{
+    font-size:20px;
+    margin:0;
+  }
+  header .sub{
+    font-size:12px;
+    color:var(--muted);
+  }
+  #logo-upload-label{
+    margin-left:auto;
+    font-size:12px;
+    color:var(--muted);
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  main{
+    max-width:960px;
+    margin:0 auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  section{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+  }
+  section h2{
+    margin:0 0 12px 0;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  section h2 .badge{
+    font-size:11px;
+    background:var(--panel-2);
+    color:var(--muted);
+    padding:2px 8px;
+    border-radius:20px;
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    padding:9px 14px;
+    font-size:13px;
+    background:var(--accent);
+    color:#08202f;
+    font-weight:600;
+  }
+  button.secondary{
+    background:var(--panel-2);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  button.danger{
+    background:var(--danger);
+    color:#fff;
+  }
+  button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  input[type=text], input[type=number], select, textarea{
+    font-family:inherit;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:13px;
+  }
+  .row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* ---- Roster ---- */
+  #roster-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .athlete-card{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:6px 10px 6px 6px;
+  }
+  .athlete-card img{
+    width:36px;height:36px;border-radius:50%;object-fit:cover;background:#334;
+  }
+  .athlete-card .name{
+    font-size:13px;
+  }
+  .athlete-card .remove{
+    background:none;border:none;color:var(--muted);font-size:14px;padding:0 2px;
+  }
+  #add-athlete-form{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    border-top:1px dashed var(--border);
+    padding-top:12px;
+  }
+  #athlete-photo-preview{
+    width:36px;height:36px;border-radius:50%;object-fit:cover;background:#334;
+  }
+
+  /* ---- Teams config ---- */
+  #teams-config{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .team-config-card{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px;
+  }
+  .color-swatch{
+    width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.3);
+  }
+
+  /* ---- OCR ---- */
+  #ocr-drop{
+    border:2px dashed var(--border);
+    border-radius:10px;
+    padding:20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    cursor:pointer;
+  }
+  #ocr-drop.dragover{
+    border-color:var(--accent);
+    color:var(--text);
+  }
+  #ocr-preview{
+    max-width:100%;
+    max-height:220px;
+    border-radius:8px;
+    margin-top:10px;
+    display:none;
+  }
+  #ocr-progress{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  #ocr-raw{
+    width:100%;
+    min-height:100px;
+    margin-top:10px;
+    font-size:12px;
+    display:none;
+  }
+
+  /* ---- Editable table ---- */
+  #teams-board{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap:14px;
+  }
+  .team-column{
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    background:var(--panel-2);
+  }
+  .team-column-header{
+    padding:10px 12px;
+    font-weight:700;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:14px;
+  }
+  .team-column-body{
+    padding:8px;
+    min-height:60px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .player-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:6px 8px;
+  }
+  .player-row img{
+    width:28px;height:28px;border-radius:50%;object-fit:cover;background:#334;
+    flex-shrink:0;
+  }
+  .player-row input[type=text]{
+    flex:1;
+    min-width:0;
+    padding:5px 8px;
+  }
+  .player-row select{
+    padding:5px;
+    font-size:12px;
+  }
+  .player-row .rm{
+    background:none;border:none;color:var(--muted);font-size:14px;
+  }
+  .add-player-row{
+    display:flex;
+    gap:6px;
+  }
+  .add-player-row input{
+    flex:1;
+  }
+
+  /* ---- Final card ---- */
+  #final-card-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+  #final-canvas{
+    max-width:100%;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:#0a0a0a;
+  }
+  .muted{color:var(--muted); font-size:12px;}
+  .hidden{display:none !important;}
+  .footer-note{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <label for="logo-input">
+    <img id="logo-img" src="" alt="logo">
+  </label>
+  <input type="file" id="logo-input" accept="image/*" class="hidden">
+  <div>
+    <h1>Campinho</h1>
+    <div class="sub">Leitura da lista → times → imagem pronta pro grupo</div>
+  </div>
+  <label id="logo-upload-label" for="logo-input">Trocar logo</label>
+</header>
+
+<main>
+
+  <!-- ATLETAS -->
+  <section>
+    <h2>Atletas cadastrados <span class="badge" id="roster-count">0</span></h2>
+    <div id="roster-list"></div>
+    <form id="add-athlete-form">
+      <img id="athlete-photo-preview" src="" alt="">
+      <input type="file" id="athlete-photo-input" accept="image/*">
+      <input type="text" id="athlete-name-input" placeholder="Nome do atleta" required>
+      <button type="submit">Adicionar atleta</button>
+      <button type="button" class="secondary" id="export-roster-btn">Exportar cadastro p/ código</button>
+      <button type="button" class="secondary" id="import-roster-btn">Importar arquivo</button>
+      <input type="file" id="import-roster-input" accept="application/json" class="hidden">
+    </form>
+    <textarea id="export-roster-output" class="hidden" style="width:100%;margin-top:10px;min-height:100px;font-size:11px;" readonly></textarea>
+  </section>
+
+  <!-- TIMES CONFIG -->
+  <section>
+    <h2>Times de hoje</h2>
+    <div id="teams-config"></div>
+    <div class="row">
+      <input type="text" id="new-team-name" placeholder="Nome do time (ex: Azul)">
+      <input type="color" id="new-team-color" value="#2166d6">
+      <button type="button" id="add-team-btn">Adicionar time</button>
+    </div>
+  </section>
+
+  <!-- OCR -->
+  <section>
+    <h2>Ler lista por foto (OCR)</h2>
+    <div id="ocr-drop">
+      Clique ou arraste a foto da lista aqui
+      <input type="file" id="ocr-input" accept="image/*" class="hidden">
+    </div>
+    <img id="ocr-preview">
+    <div id="ocr-progress"></div>
+    <textarea id="ocr-raw" placeholder="Texto reconhecido aparecerá aqui..."></textarea>
+    <div class="row" style="margin-top:10px;">
+      <button type="button" id="ocr-parse-btn" class="secondary" disabled>Distribuir nos times</button>
+    </div>
+  </section>
+
+  <!-- TABELA EDITÁVEL -->
+  <section>
+    <h2>Times (editável)</h2>
+    <div id="teams-board"></div>
+  </section>
+
+  <!-- IMAGEM FINAL -->
+  <section>
+    <h2>Imagem final</h2>
+    <div id="final-card-wrap">
+      <div class="row">
+        <input type="text" id="final-title" placeholder="Título (ex: Pelada de Sábado - 06/07)" style="min-width:280px;">
+        <button type="button" id="generate-final-btn">Gerar imagem</button>
+        <button type="button" id="download-final-btn" class="secondary" disabled>Baixar imagem</button>
+      </div>
+      <canvas id="final-canvas" width="900" height="600"></canvas>
+    </div>
+  </section>
+
+  <div class="footer-note">Tudo é salvo localmente no seu navegador. Nada é publicado automaticamente.</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
